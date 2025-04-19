@@ -2,12 +2,13 @@ import { supabase } from "@/utils/supabase/supabase";
 import { Dispatch, SetStateAction, ReactElement } from "react";
 import getData from "./getData";
 
-export default function RemoveDialog(props: {
+export default function RestoreDialog(props: {
   id: number;
   showModal: Dispatch<SetStateAction<boolean>>;
   taskList: Dispatch<SetStateAction<Array<ReactElement>>>;
+  filterStatus: string;
 }) {
-  const { showModal, taskList } = props;
+  const { showModal, taskList, filterStatus } = props;
 
   const onSubmit = async (event: any) => {
     event.preventDefault();
@@ -15,14 +16,14 @@ export default function RemoveDialog(props: {
     try {
       const { error } = await supabase
         .from("tasks")
-        .update({ status: "削除済み" })
-        .eq("id", props.id); // ← ここでステータスを削除済みに変更
+        .update({ status: "未着手" })
+        .eq("id", props.id); // ← ここでステータスを未着手に変更
 
       if (error) {
         console.log(error);
       }
 
-      await getData(taskList);
+      await getData(taskList, filterStatus);
     } catch (error) {
       console.log(error);
     }
@@ -34,7 +35,7 @@ export default function RemoveDialog(props: {
         <div className="relative bg-white rounded-lg shadow">
           <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t">
             <h3 className="text-xl font-semibold text-gray-900">
-              タスクを削除済みにします。よろしいですか？
+              タスクを復元します。よろしいですか？
             </h3>
             <button
               type="button"
@@ -67,7 +68,7 @@ export default function RemoveDialog(props: {
                   type="submit"
                   className="w-full text-white bg-blue-500 hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
                 >
-                  タスクを削除
+                  タスクを復元
                 </button>
               </form>
               <button
