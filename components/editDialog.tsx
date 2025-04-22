@@ -1,14 +1,23 @@
 import { supabase } from "@/utils/supabase/supabase";
-import { Dispatch, SetStateAction, ReactElement, useState } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  ReactElement,
+  useState,
+  useEffect,
+} from "react";
 import getData from "./getData";
 
 export default function EditDialog(props: {
   id: number;
   showModal: Dispatch<SetStateAction<boolean>>;
   taskList: Dispatch<SetStateAction<Array<ReactElement>>>;
+  text: string;
+  detail: string;
 }) {
   const { showModal, taskList } = props;
-  const [text, setText] = useState("");
+  const [text, setText] = useState(props.text);
+  const [detail, setDetail] = useState(props.detail);
 
   const onSubmit = async (event: any) => {
     event.preventDefault();
@@ -16,7 +25,7 @@ export default function EditDialog(props: {
     try {
       const { data, error } = await supabase
         .from("tasks")
-        .update({ text: text })
+        .update({ text: text, detail: detail })
         .eq("id", props.id)
         .select();
       if (error) {
@@ -28,6 +37,10 @@ export default function EditDialog(props: {
       console.log(error);
     }
   };
+
+  useEffect(() => {
+    console.log("表示された", props.detail);
+  }, []);
 
   return (
     <div className="overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full h-screen bg-black-rgba pt-28">
@@ -72,6 +85,17 @@ export default function EditDialog(props: {
                   required
                   value={text}
                   onChange={(e) => setText(e.target.value)}
+                />
+              </div>
+              <div>
+                <textarea
+                  name="detail"
+                  id="detail"
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                  rows={4}
+                  placeholder="詳細を入力"
+                  value={detail}
+                  onChange={(e) => setDetail(e.target.value)}
                 />
               </div>
               <div>

@@ -22,17 +22,6 @@ export default async function getData(
       query = supabase.from("tasks").select("*").eq("status", filterStatus);
     }
 
-    if (filterStatus !== "すべて") {
-      query.eq("status", filterStatus);
-    }
-
-    // 優先度で並び替え（高 → 中 → 低 になるように文字列の順番に注意）
-    if (sortPriority === "昇順") {
-      query.order("priority_value", { ascending: true });
-    } else if (sortPriority === "降順") {
-      query.order("priority_value", { ascending: false });
-    }
-
     const { data: tasks, error } = await query;
 
     if (error) {
@@ -41,7 +30,21 @@ export default async function getData(
     }
 
     if (tasks) {
-      for (let task of tasks) {
+      let filtered = tasks;
+
+      if (filterStatus !== "すべて") {
+        filtered = filtered.filter((task) => task.status === filterStatus);
+      }
+
+      if (sortPriority !== "なし") {
+        filtered.sort((a, b) => {
+          const aVal = a.priority_value ?? 0;
+          const bVal = b.priority_value ?? 0;
+          return sortPriority === "昇順" ? aVal - bVal : bVal - aVal;
+        });
+      }
+
+      for (let task of filtered) {
         tmpTaskList.push(
           <li className="flex items-center justify-between py-2" key={task.id}>
             <Task
@@ -50,6 +53,8 @@ export default async function getData(
               text={task.text ?? ""}
               update_at={task.update_at ?? ""}
               status={task.status ?? "未着手"}
+              priority={task.priority ?? "中"}
+              detail={task.detail}
             />
           </li>
         );
